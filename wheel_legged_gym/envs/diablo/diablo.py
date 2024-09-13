@@ -122,6 +122,8 @@ class Diablo(BaseTask):
             self.privileged_obs_buf = torch.clip(
                 self.privileged_obs_buf, -clip_obs, clip_obs
             )
+        # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        # print(self.obs_buf.shape)
         return (
             self.obs_buf,
             self.privileged_obs_buf,
@@ -340,7 +342,6 @@ class Diablo(BaseTask):
         # note that observation noise need to modified accordingly !!!
         obs_buf = torch.cat(
             (
-                # self.base_lin_vel * self.obs_scales.lin_vel,
                 self.base_ang_vel * self.obs_scales.ang_vel,
                 self.projected_gravity,
                 self.commands[:, :3] * self.commands_scale,
@@ -883,19 +884,7 @@ class Diablo(BaseTask):
         self.add_noise = self.cfg.noise.add_noise
         noise_scales = self.cfg.noise.noise_scales
         noise_level = self.cfg.noise.noise_level
-        # noise_vec[:3] = noise_scales.lin_vel * noise_level * self.obs_scales.lin_vel
-        # noise_vec[3 : 3 + 3] = (
-        #     noise_scales.ang_vel * noise_level * self.obs_scales.ang_vel
-        # )
-        # noise_vec[3 + 3 : 6 + 3] = noise_scales.gravity * noise_level
-        # noise_vec[6 + 3 : 8 + 3] = 0.0  # commands
-        # noise_vec[8 + 3 : 14 + 3] = (
-        #     noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
-        # )
-        # noise_vec[14 + 3 : 20 + 3] = (
-        #     noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
-        # )
-        # noise_vec[20 + 3 : 26 + 3] = 0.0  # previous actions
+
         noise_vec[:3] = noise_scales.ang_vel * noise_level * self.obs_scales.ang_vel
         noise_vec[3:6] = noise_scales.gravity * noise_level
         noise_vec[6:8] = 0.0  # commands

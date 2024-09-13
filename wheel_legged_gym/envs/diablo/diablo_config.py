@@ -119,8 +119,8 @@ class DiabloCfg(BaseConfig):
     class control:
         control_type = "P"  # P: position, V: velocity, T: torques
         # PD Drive parameters:
-        stiffness = {"hip": 30.0, "knee": 30.0, "wheel": 0}  # [N*m/rad]
-        damping = {"hip": 0.5, "knee": 0.5, "wheel": 0.8}  # [N*m*s/rad]
+        stiffness = {"hip": 20.0, "knee": 20.0, "wheel": 0}  # [N*m/rad]
+        damping = {"hip": 0.3, "knee": 0.3, "wheel": 0.6}  # [N*m*s/rad]
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.5
         # decimation: Number of control action updates @ sim DT per policy DT
@@ -188,13 +188,13 @@ class DiabloCfg(BaseConfig):
             nominal_state = -0.1
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
-            orientation = -10.0
+            orientation = -50.0
 
             dof_vel = -5e-5
             dof_acc = -2.5e-7
             torques = -0.0001
-            action_rate = -0.01
-            action_smooth = -0.01
+            action_rate = -0.03
+            action_smooth = -0.03
 
             collision = -1.0
             dof_pos_limits = -1.0
@@ -298,8 +298,11 @@ class DiabloCfgPPO(BaseConfig):
         extra_learning_rate = 1e-3
 
     class runner:
+        # policy_class_name = (
+        #     "ActorCriticSequence"  # could be ActorCritic, ActorCriticSequence
+        # )
         policy_class_name = (
-            "ActorCriticSequence"  # could be ActorCritic, ActorCriticSequence
+            "ActorCritic"  # could be ActorCritic, ActorCriticSequence
         )
         algorithm_class_name = "PPO"
         num_steps_per_env = 48  # per iteration
@@ -307,7 +310,7 @@ class DiabloCfgPPO(BaseConfig):
 
         # logging
         save_interval = 100  # check for potential saves every this many iterations
-        experiment_name = "test"
+        experiment_name = "diablo"
         run_name = ""
         # load and resume
         resume = False
