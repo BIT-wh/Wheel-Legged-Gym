@@ -99,7 +99,7 @@ class DiabloCfg(BaseConfig):
         class ranges:
             lin_vel_x = [-5.0, 5.0]  # min max [m/s]
             ang_vel_yaw = [-3.14, 3.14]  # min max [rad/s]
-            height = [0.18, 0.4]
+            height = [0.18, 0.25]
             heading = [-3.14, 3.14]
 
     class init_state:
@@ -134,8 +134,8 @@ class DiabloCfg(BaseConfig):
         offset = 0.
         l1 = 0.14
         l2 = 0.14
-        penalize_contacts_on = ["left", "right", "base"]
-        terminate_after_contacts_on = ["base"]
+        penalize_contacts_on = ["hip", "knee", "base"]
+        terminate_after_contacts_on = ["base", "hip", "knee"]
         self_collisions = 1  # 1 to disable, 0 to enable...bitwise filter
         flip_visual_attachments = False
         foot_name = "None"  # name of the feet bodies, used to index body state and contact force tensors

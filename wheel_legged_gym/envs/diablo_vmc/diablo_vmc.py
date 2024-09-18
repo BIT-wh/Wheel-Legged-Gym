@@ -169,8 +169,8 @@ class DiabloVMC(Diablo):
         )
         self.theta2 = torch.cat(
             (
-                (-self.dof_pos[:, 1] + self.pi).unsqueeze(1),
-                (-self.dof_pos[:, 4] + self.pi).unsqueeze(1),
+                (self.dof_pos[:, 1] + self.pi).unsqueeze(1),
+                (self.dof_pos[:, 4] + self.pi).unsqueeze(1),
             ),
             dim=1,
         )
@@ -178,7 +178,7 @@ class DiabloVMC(Diablo):
             (self.dof_vel[:, 0].unsqueeze(1), self.dof_vel[:, 3].unsqueeze(1)), dim=1
         )
         theta2_dot = torch.cat(
-            (-self.dof_vel[:, 1].unsqueeze(1), -self.dof_vel[:, 4].unsqueeze(1)), dim=1
+            (self.dof_vel[:, 1].unsqueeze(1), self.dof_vel[:, 4].unsqueeze(1)), dim=1
         )
 
         self.L0, self.theta0 = self.forward_kinematics(self.theta1, self.theta2)
@@ -417,8 +417,8 @@ class DiabloVMC(Diablo):
         )
 
     def VMC(self, F, T):
-        # theta0 = self.theta0 + self.pi / 2
-        theta0 = self.theta0
+        # the vmc theta frame is dif
+        theta0 = self.theta0 + self.pi / 2
         t11 = self.cfg.asset.l1 * torch.sin(
             theta0 - self.theta1
         ) - self.cfg.asset.l2 * torch.sin(self.theta1 + self.theta2 - theta0)

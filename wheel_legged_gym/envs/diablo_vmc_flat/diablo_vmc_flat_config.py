@@ -41,7 +41,11 @@ class DiabloVMCFlatCfg(DiabloVMCCfg):
 
 
 class DiabloVMCFlatCfgPPO(DiabloVMCCfgPPO):
+
     class runner(DiabloVMCCfgPPO.runner):
         # logging
+        # policy_class_name = (
+        #     "ActorCriticSequence"  # could be ActorCritic, ActorCriticSequence
+        # )
         experiment_name = "diablo_vmc_flat"
-        max_iterations = 2000
+        max_iterations = 5000

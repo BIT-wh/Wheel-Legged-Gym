@@ -40,6 +40,42 @@ class DiabloVMCCfg(DiabloCfg):
                 DiabloCfg.env.num_observations + 7 * 11 + 3 + 6 * 7 + 3 + 3
         )
 
+    class rewards(DiabloCfg.rewards):
+        class scales:
+            tracking_lin_vel = 1.0
+            tracking_lin_vel_enhance = 1
+            tracking_ang_vel = 1.0
+
+            base_height =500.0
+            nominal_state = -0.15
+            lin_vel_z = -2.0
+            ang_vel_xy = -0.05
+            orientation = -100.0
+
+            dof_vel = -5e-5
+            dof_acc = -2.5e-7
+            torques = -0.0001
+            action_rate = -0.03
+            action_smooth = -0.03
+
+            collision = -1000.0
+            dof_pos_limits = -1.0
+
+        base_height_target = 0.20
+
+    class init_state(DiabloCfg.init_state):
+        pos = [0.0, 0.0, 0.25]  # x,y,z [m]
+        rot = [0.0, 0.0, 0.0, 1.0]  # x,y,z,w [quat]
+        lin_vel = [0.0, 0.0, 0.0]  # x,y,z [m/s]
+        ang_vel = [0.0, 0.0, 0.0]  # x,y,z [rad/s]
+        default_joint_angles = {  # target angles when action = 0.0
+            "left_hip_joint": 0.3,
+            "left_knee_joint": -0.75,
+            "left_wheel_joint": 0.0,
+            "right_hip_joint": 0.3,
+            "right_knee_joint": -0.75,
+            "right_wheel_joint": 0.0,
+        }
     class control(DiabloCfg.control):
         action_scale_theta = 0.5
         action_scale_l0 = 0.1
@@ -47,16 +83,17 @@ class DiabloVMCCfg(DiabloCfg):
 
         # what is l0_offset mean?
         l0_offset = 0.175
-        feedforward_force = 40.0  # [N]
+        # l0_offset = 0.
+        feedforward_force = 0.0  # [N]
 
         kp_theta = 50.0  # [N*m/rad]
-        kd_theta = 3.0  # [N*m*s/rad]
-        kp_l0 = 900.0  # [N/m]
-        kd_l0 = 20.0  # [N*s/m]
+        kd_theta = 10.0  # [N*m*s/rad]
+        kp_l0 = 1000.0  # [N/m]
+        kd_l0 = 30.0  # [N*s/m]
 
         # PD Drive parameters:
         stiffness = {"f0": 0.0, "f1": 0.0, "wheel": 0}  # [N*m/rad]
-        damping = {"f0": 0.0, "f1": 0.0, "wheel": 0.5}  # [N*m*s/rad]
+        damping = {"f0": 0.0, "f1": 0.0, "wheel": 0.8}  # [N*m*s/rad]
 
     class normalization(DiabloCfg.normalization):
         class obs_scales(DiabloCfg.normalization.obs_scales):
@@ -68,7 +105,36 @@ class DiabloVMCCfg(DiabloCfg):
             l0 = 0.02
             l0_dot = 0.1
 
-
+    class commands(DiabloCfg.commands):
+        class ranges:
+            lin_vel_x = [-1.0, 1.0]  # min max [m/s]
+            ang_vel_yaw = [-3.14, 3.14]  # min max [rad/s]
+            height = [0.18, 0.25]
+            heading = [-3.14, 3.14]
+    class domain_rand(DiabloCfg.domain_rand):
+        randomize_friction = False
+        friction_range = [0.1, 2.0]
+        randomize_restitution = False
+        restitution_range = [0.0, 1.0]
+        randomize_base_mass = False
+        added_mass_range = [-2.0, 3.0]
+        randomize_inertia = False
+        randomize_inertia_range = [0.8, 1.2]
+        randomize_base_com = False
+        rand_com_vec = [0.05, 0.05, 0.05]
+        push_robots = False
+        push_interval_s = 7
+        max_push_vel_xy = 2.0
+        randomize_Kp = False
+        randomize_Kp_range = [0.9, 1.1]
+        randomize_Kd = False
+        randomize_Kd_range = [0.9, 1.1]
+        randomize_motor_torque = False
+        randomize_motor_torque_range = [0.9, 1.1]
+        randomize_default_dof_pos = False
+        randomize_default_dof_pos_range = [-0.05, 0.05]
+        randomize_action_delay = False
+        delay_ms_range = [0, 10]
 class DiabloVMCCfgPPO(DiabloCfgPPO):
 
     class algorithm(DiabloCfgPPO.algorithm):

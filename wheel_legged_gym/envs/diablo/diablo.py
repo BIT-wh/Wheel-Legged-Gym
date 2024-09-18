@@ -175,8 +175,8 @@ class Diablo(BaseTask):
         )
         theta2 = torch.cat(
             (
-                (-self.dof_pos[:, 1] + self.pi ).unsqueeze(1),
-                (-self.dof_pos[:, 4] + self.pi ).unsqueeze(1),
+                (self.dof_pos[:, 1] + self.pi ).unsqueeze(1),
+                (self.dof_pos[:, 4] + self.pi ).unsqueeze(1),
             ),
             dim=1,
         )
@@ -215,7 +215,7 @@ class Diablo(BaseTask):
             torch.norm(
                 self.contact_forces[:, self.termination_contact_indices, :], dim=-1
             )
-            > 10.0,
+            > 0.5,
             dim=1,
         )
         fail_buf |= self.projected_gravity[:, 2] > -0.1
