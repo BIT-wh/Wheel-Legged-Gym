@@ -97,9 +97,9 @@ class DiabloCfg(BaseConfig):
         heading_command = True  # if true: compute ang vel command from heading error
 
         class ranges:
-            lin_vel_x = [-1.0, 1.0]  # min max [m/s]
+            lin_vel_x = [-5.0, 5.0]  # min max [m/s]
             ang_vel_yaw = [-3.14, 3.14]  # min max [rad/s]
-            height = [0.18, 0.28]
+            height = [0.18, 0.4]
             heading = [-3.14, 3.14]
 
     class init_state:
@@ -212,7 +212,7 @@ class DiabloCfg(BaseConfig):
 
     class normalization:
         class obs_scales:
-            lin_vel = 2.0
+            lin_vel = 10.0
             ang_vel = 0.25
             dof_pos = 1.0
             dof_vel = 0.05
