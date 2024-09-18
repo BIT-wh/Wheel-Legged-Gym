@@ -45,6 +45,7 @@ class DiabloVMCCfg(DiabloCfg):
         action_scale_l0 = 0.1
         action_scale_vel = 10.0
 
+        # what is l0_offset mean?
         l0_offset = 0.175
         feedforward_force = 40.0  # [N]
 

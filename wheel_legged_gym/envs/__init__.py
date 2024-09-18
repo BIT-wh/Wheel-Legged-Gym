@@ -31,6 +31,7 @@
 from wheel_legged_gym import WHEEL_LEGGED_GYM_ROOT_DIR, WHEEL_LEGGED_GYM_ENVS_DIR
 from .base.legged_robot import LeggedRobot
 from .diablo.diablo import Diablo
+from .diablo_vmc.diablo_vmc import DiabloVMC
 from .wheel_legged.wheel_legged_config import WheelLeggedCfg, WheelLeggedCfgPPO
 from .diablo.diablo_config import DiabloCfg, DiabloCfgPPO
 from .wheel_legged_vmc.wheel_legged_vmc import LeggedRobotVMC
@@ -42,7 +43,14 @@ from .wheel_legged_vmc_flat.wheel_legged_vmc_flat_config import (
     WheelLeggedVMCFlatCfg,
     WheelLeggedVMCFlatCfgPPO,
 )
-
+from .diablo_vmc.diablo_vmc_config import (
+    DiabloVMCCfg,
+    DiabloVMCCfgPPO,
+)
+from .diablo_vmc_flat.diablo_vmc_flat_config import (
+    DiabloVMCFlatCfg,
+    DiabloVMCFlatCfgPPO,
+)
 
 import os
 
@@ -66,3 +74,13 @@ task_registry.register(
     DiabloCfg(),
     DiabloCfgPPO()
 )
+task_registry.register(
+    "diablo_vmc", DiabloVMC, DiabloVMCCfg(), DiabloVMCCfgPPO()
+)
+task_registry.register(
+    "diablo_vmc_flat",
+    DiabloVMC,
+    DiabloVMCFlatCfg(),
+    DiabloVMCFlatCfgPPO()
+)
+

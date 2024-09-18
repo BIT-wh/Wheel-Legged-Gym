@@ -52,6 +52,7 @@ from wheel_legged_gym.utils.math import (
 from wheel_legged_gym.utils.helpers import class_to_dict
 from .diablo_vmc_config import DiabloVMCCfg
 
+
 class DiabloVMC(Diablo):
     def __init__(
             self, cfg: DiabloVMCCfg, sim_params, physics_engine, sim_device, headless
@@ -164,20 +165,20 @@ class DiabloVMC(Diablo):
 
     def leg_post_physics_step(self):
         self.theta1 = torch.cat(
-            (self.dof_pos[:, 0].unsqueeze(1), -self.dof_pos[:, 3].unsqueeze(1)), dim=1
+            (self.dof_pos[:, 0].unsqueeze(1), self.dof_pos[:, 3].unsqueeze(1)), dim=1
         )
         self.theta2 = torch.cat(
             (
-                (self.dof_pos[:, 1] + self.pi / 2).unsqueeze(1),
-                (-self.dof_pos[:, 4] + self.pi / 2).unsqueeze(1),
+                (-self.dof_pos[:, 1] + self.pi).unsqueeze(1),
+                (-self.dof_pos[:, 4] + self.pi).unsqueeze(1),
             ),
             dim=1,
         )
         theta1_dot = torch.cat(
-            (self.dof_vel[:, 0].unsqueeze(1), -self.dof_vel[:, 3].unsqueeze(1)), dim=1
+            (self.dof_vel[:, 0].unsqueeze(1), self.dof_vel[:, 3].unsqueeze(1)), dim=1
         )
         theta2_dot = torch.cat(
-            (self.dof_vel[:, 1].unsqueeze(1), -self.dof_vel[:, 4].unsqueeze(1)), dim=1
+            (-self.dof_vel[:, 1].unsqueeze(1), -self.dof_vel[:, 4].unsqueeze(1)), dim=1
         )
 
         self.L0, self.theta0 = self.forward_kinematics(self.theta1, self.theta2)
@@ -198,7 +199,7 @@ class DiabloVMC(Diablo):
         end_y = self.cfg.asset.l1 * torch.sin(theta1) + self.cfg.asset.l2 * torch.sin(
             theta1 + theta2
         )
-        L0 = torch.sqrt(end_x**2 + end_y**2)
+        L0 = torch.sqrt(end_x ** 2 + end_y ** 2)
         theta0 = torch.arctan2(end_y, end_x) - self.pi / 2
         return L0, theta0
 
@@ -313,7 +314,7 @@ class DiabloVMC(Diablo):
                         self.root_states[:, 2].unsqueeze(1) - 0.5 - self.measured_heights,
                         -1,
                         1.0,
-                        )
+                    )
                     * self.obs_scales.height_measurements
             )
             self.privileged_obs_buf = torch.cat(
@@ -343,7 +344,7 @@ class DiabloVMC(Diablo):
                             ) * self.noise_scale_vec
 
         self.obs_history = torch.cat(
-            (self.obs_history[:, self.num_obs :], self.obs_buf), dim=-1
+            (self.obs_history[:, self.num_obs:], self.obs_buf), dim=-1
         )
 
     def _compute_torques(self, actions):
@@ -404,8 +405,8 @@ class DiabloVMC(Diablo):
                 T1[:, 0].unsqueeze(1),
                 T2[:, 0].unsqueeze(1),
                 self.torque_wheel[:, 0].unsqueeze(1),
-                -T1[:, 1].unsqueeze(1),
-                -T2[:, 1].unsqueeze(1),
+                T1[:, 1].unsqueeze(1),
+                T2[:, 1].unsqueeze(1),
                 self.torque_wheel[:, 1].unsqueeze(1),
             ),
             axis=1,
@@ -416,7 +417,8 @@ class DiabloVMC(Diablo):
         )
 
     def VMC(self, F, T):
-        theta0 = self.theta0 + self.pi / 2
+        # theta0 = self.theta0 + self.pi / 2
+        theta0 = self.theta0
         t11 = self.cfg.asset.l1 * torch.sin(
             theta0 - self.theta1
         ) - self.cfg.asset.l2 * torch.sin(self.theta1 + self.theta2 - theta0)
@@ -596,7 +598,7 @@ class DiabloVMC(Diablo):
             dtype=torch.float,
             device=self.device,
             requires_grad=False,
-            )  # x vel, y vel, yaw vel, heading
+        )  # x vel, y vel, yaw vel, heading
         self.commands_scale = torch.tensor(
             [
                 self.obs_scales.lin_vel,
@@ -809,7 +811,7 @@ class DiabloVMC(Diablo):
                     self.cfg.domain_rand.delay_ms_range[1] / 1000 / self.sim_params.dt,
                     (self.num_envs, 1),
                     device=self.device,
-                    )
+                )
             ).squeeze(-1)
             self.action_delay_idx = action_delay_idx.long()
 
