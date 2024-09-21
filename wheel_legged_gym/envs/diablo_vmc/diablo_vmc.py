@@ -165,12 +165,15 @@ class DiabloVMC(Diablo):
 
     def leg_post_physics_step(self):
         self.theta1 = torch.cat(
-            (self.dof_pos[:, 0].unsqueeze(1), self.dof_pos[:, 3].unsqueeze(1)), dim=1
+            ((self.dof_pos[:, 0] + 0.13433).unsqueeze(1),
+             (self.dof_pos[:, 3]+ 0.13433).unsqueeze(1)
+             ),
+            dim=1
         )
         self.theta2 = torch.cat(
             (
-                (self.dof_pos[:, 1] + self.pi).unsqueeze(1),
-                (self.dof_pos[:, 4] + self.pi).unsqueeze(1),
+                (self.dof_pos[:, 1] + self.pi - 0.26866).unsqueeze(1),
+                (self.dof_pos[:, 4] + self.pi - 0.26866).unsqueeze(1),
             ),
             dim=1,
         )

@@ -134,8 +134,8 @@ class DiabloCfg(BaseConfig):
         offset = 0.
         l1 = 0.14
         l2 = 0.14
-        penalize_contacts_on = ["hip", "knee", "base"]
-        terminate_after_contacts_on = ["base", "hip", "knee"]
+        penalize_contacts_on = ["shank", "thigh", "diablo_base_link"]
+        terminate_after_contacts_on = ["shank", "thigh", "diablo_base_link"]
         self_collisions = 1  # 1 to disable, 0 to enable...bitwise filter
         flip_visual_attachments = False
         foot_name = "None"  # name of the feet bodies, used to index body state and contact force tensors

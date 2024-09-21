@@ -48,4 +48,4 @@ class DiabloVMCFlatCfgPPO(DiabloVMCCfgPPO):
         #     "ActorCriticSequence"  # could be ActorCritic, ActorCriticSequence
         # )
         experiment_name = "diablo_vmc_flat"
-        max_iterations = 5000
+        max_iterations = 30000

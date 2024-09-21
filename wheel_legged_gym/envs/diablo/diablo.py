@@ -215,15 +215,16 @@ class Diablo(BaseTask):
             torch.norm(
                 self.contact_forces[:, self.termination_contact_indices, :], dim=-1
             )
-            > 0.5,
+            > 0.1,
             dim=1,
         )
-        fail_buf |= self.projected_gravity[:, 2] > -0.1
+        fail_buf |= self.projected_gravity[:, 2] > -0.8
         self.fail_buf *= fail_buf
         self.fail_buf += fail_buf
         self.time_out_buf = (
             self.episode_length_buf > self.max_episode_length
         )  # no terminal reward for time-outs
+
         if self.cfg.terrain.mesh_type in ["heightfield", "trimesh"]:
             self.edge_reset_buf = self.base_position[:, 0] > self.terrain_x_max - 1
             self.edge_reset_buf |= self.base_position[:, 0] < self.terrain_x_min + 1
@@ -234,6 +235,8 @@ class Diablo(BaseTask):
             | self.time_out_buf
             | self.edge_reset_buf
         )
+        # fail_buf = torch.any(torch.norm(self.contact_forces[:, self.termination_contact_indices, :], dim=-1) > 1., dim=1)
+        # self.reset_buf = (fail_buf | self.time_out_buf | self.edge_reset_buf)
 
     def reset_idx(self, env_ids):
         """Reset some environments.

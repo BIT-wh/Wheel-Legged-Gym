@@ -39,6 +39,7 @@ class DiabloVMCCfg(DiabloCfg):
         num_privileged_obs = (
                 DiabloCfg.env.num_observations + 7 * 11 + 3 + 6 * 7 + 3 + 3
         )
+        fail_to_terminal_time_s = 0.5
 
     class rewards(DiabloCfg.rewards):
         class scales:
@@ -46,34 +47,34 @@ class DiabloVMCCfg(DiabloCfg):
             tracking_lin_vel_enhance = 1
             tracking_ang_vel = 1.0
 
-            base_height =500.0
-            nominal_state = -0.15
-            lin_vel_z = -2.0
+            base_height = 500.0
+            nominal_state = -0.2
+            lin_vel_z = -0.2
             ang_vel_xy = -0.05
             orientation = -100.0
 
             dof_vel = -5e-5
             dof_acc = -2.5e-7
-            torques = -0.0001
+            torques = -0.1e-5
             action_rate = -0.03
             action_smooth = -0.03
 
             collision = -1000.0
-            dof_pos_limits = -1.0
+            dof_pos_limits = -3
 
         base_height_target = 0.20
 
     class init_state(DiabloCfg.init_state):
-        pos = [0.0, 0.0, 0.25]  # x,y,z [m]
+        pos = [0.0, 0.0, 0.15]  # x,y,z [m]
         rot = [0.0, 0.0, 0.0, 1.0]  # x,y,z,w [quat]
         lin_vel = [0.0, 0.0, 0.0]  # x,y,z [m/s]
         ang_vel = [0.0, 0.0, 0.0]  # x,y,z [rad/s]
         default_joint_angles = {  # target angles when action = 0.0
-            "left_hip_joint": 0.3,
-            "left_knee_joint": -0.75,
+            "left_hip_joint": 0.0,
+            "left_knee_joint": 0.0,
             "left_wheel_joint": 0.0,
-            "right_hip_joint": 0.3,
-            "right_knee_joint": -0.75,
+            "right_hip_joint": 0.0,
+            "right_knee_joint": 0.0,
             "right_wheel_joint": 0.0,
         }
     class control(DiabloCfg.control):
@@ -82,13 +83,13 @@ class DiabloVMCCfg(DiabloCfg):
         action_scale_vel = 10.0
 
         # what is l0_offset mean?
-        l0_offset = 0.175
+        l0_offset = 0.20
         # l0_offset = 0.
-        feedforward_force = 0.0  # [N]
+        feedforward_force = 55.0  # [N]
 
-        kp_theta = 50.0  # [N*m/rad]
+        kp_theta = 60.0  # [N*m/rad]
         kd_theta = 10.0  # [N*m*s/rad]
-        kp_l0 = 1000.0  # [N/m]
+        kp_l0 = 500.0  # [N/m]
         kd_l0 = 30.0  # [N*s/m]
 
         # PD Drive parameters:
