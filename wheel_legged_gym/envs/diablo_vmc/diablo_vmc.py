@@ -192,6 +192,8 @@ class DiabloVMC(Diablo):
         )
         self.L0_dot = (L0_temp - self.L0) / dt
         self.theta0_dot = (theta0_temp - self.theta0) / dt
+        # print("L0=", self.L0)
+        # print("theta0=", self.theta0)
 
     def forward_kinematics(self, theta1, theta2):
         end_x = (
@@ -305,6 +307,7 @@ class DiabloVMC(Diablo):
             ),
             dim=-1,
         )
+        # print(self.dof_pos[:, [2, 5]])
         return obs_buf
 
     def compute_observations(self):
@@ -391,7 +394,10 @@ class DiabloVMC(Diablo):
                 )
                 * self.cfg.control.action_scale_vel
         )
-
+        # print("~~~~~~~~~~~~~~~~~~~~~~")
+        # # print(l0_ref[0][1])
+        # print(theta0_ref[0][0], l0_ref[0][0], wheel_vel_ref[0][0], theta0_ref[0][1], l0_ref[0][1], wheel_vel_ref[0][1])
+        # print("!!!!!!!!!!!!!!!!!!!!!!!!!")
         self.torque_leg = (
                 self.theta_kp * (theta0_ref - self.theta0) - self.theta_kd * self.theta0_dot
         )
@@ -819,3 +825,10 @@ class DiabloVMC(Diablo):
             self.action_delay_idx = action_delay_idx.long()
 
     # ------------ reward functions----------------
+    def _reward_theta_limit(self):
+        # Penalize theta is too huge
+        return torch.sum(torch.square(self.theta0[:, :2]), dim=1)
+
+    def _reward_same_l(self):
+        # Penalize l is too dif
+        return torch.square(self.L0[:, 0] - self.L0[:, 1])

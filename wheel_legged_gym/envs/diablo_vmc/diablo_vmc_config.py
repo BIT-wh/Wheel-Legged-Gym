@@ -39,7 +39,7 @@ class DiabloVMCCfg(DiabloCfg):
         num_privileged_obs = (
                 DiabloCfg.env.num_observations + 7 * 11 + 3 + 6 * 7 + 3 + 3
         )
-        fail_to_terminal_time_s = 0.5
+        fail_to_terminal_time_s = 0.7
 
     class rewards(DiabloCfg.rewards):
         class scales:
@@ -47,11 +47,11 @@ class DiabloVMCCfg(DiabloCfg):
             tracking_lin_vel_enhance = 1
             tracking_ang_vel = 1.0
 
-            base_height = 500.0
+            base_height = 50.0
             nominal_state = -0.2
-            lin_vel_z = -0.2
+            lin_vel_z = -1.2
             ang_vel_xy = -0.05
-            orientation = -100.0
+            orientation = -300.0
 
             dof_vel = -5e-5
             dof_acc = -2.5e-7
@@ -62,7 +62,10 @@ class DiabloVMCCfg(DiabloCfg):
             collision = -1000.0
             dof_pos_limits = -3
 
-        base_height_target = 0.20
+            theta_limit = -1
+            same_l = -0.3
+
+        base_height_target = 0.30
 
     class init_state(DiabloCfg.init_state):
         pos = [0.0, 0.0, 0.15]  # x,y,z [m]
@@ -89,8 +92,8 @@ class DiabloVMCCfg(DiabloCfg):
 
         kp_theta = 60.0  # [N*m/rad]
         kd_theta = 10.0  # [N*m*s/rad]
-        kp_l0 = 500.0  # [N/m]
-        kd_l0 = 30.0  # [N*s/m]
+        kp_l0 = 1000.0  # [N/m]
+        kd_l0 = 50.0  # [N*s/m]
 
         # PD Drive parameters:
         stiffness = {"f0": 0.0, "f1": 0.0, "wheel": 0}  # [N*m/rad]
@@ -110,15 +113,15 @@ class DiabloVMCCfg(DiabloCfg):
         class ranges:
             lin_vel_x = [-1.0, 1.0]  # min max [m/s]
             ang_vel_yaw = [-3.14, 3.14]  # min max [rad/s]
-            height = [0.18, 0.25]
+            height = [0.20, 0.35]
             heading = [-3.14, 3.14]
     class domain_rand(DiabloCfg.domain_rand):
         randomize_friction = False
-        friction_range = [0.1, 2.0]
+        friction_range = [0.5, 1.5]
         randomize_restitution = False
         restitution_range = [0.0, 1.0]
         randomize_base_mass = False
-        added_mass_range = [-2.0, 3.0]
+        added_mass_range = [-2.0, 2.0]
         randomize_inertia = False
         randomize_inertia_range = [0.8, 1.2]
         randomize_base_com = False

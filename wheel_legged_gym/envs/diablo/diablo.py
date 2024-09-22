@@ -354,6 +354,7 @@ class Diablo(BaseTask):
             ),
             dim=-1,
         )
+        print(self.dof_vel[:, [2, 5]])
         return obs_buf
 
     def compute_observations(self):
