@@ -308,6 +308,7 @@ class DiabloVMC(Diablo):
             dim=-1,
         )
         # print(self.dof_pos[:, [2, 5]])
+        # print(self.actions)
         return obs_buf
 
     def compute_observations(self):
@@ -426,26 +427,49 @@ class DiabloVMC(Diablo):
         )
 
     def VMC(self, F, T):
-        # the vmc theta frame is dif
-        theta0 = self.theta0 + self.pi / 2
-        t11 = self.cfg.asset.l1 * torch.sin(
-            theta0 - self.theta1
-        ) - self.cfg.asset.l2 * torch.sin(self.theta1 + self.theta2 - theta0)
+        l1 = self.cfg.asset.l1
+        l2 = self.cfg.asset.l2
+        theta1 = self.theta1
+        theta2 = self.theta2
+        x = l1 * torch.cos(theta1) + l2 * torch.cos(theta1 + theta2)
+        y = l1 * torch.sin(theta1) + l2 * torch.sin(theta1 + theta2)
 
-        t12 = self.cfg.asset.l1 * torch.cos(
-            theta0 - self.theta1
-        ) - self.cfg.asset.l2 * torch.cos(self.theta1 + self.theta2 - theta0)
-        t12 = t12 / self.L0
+        dx_dphi1 = -l1 * torch.sin(theta1) - l2 * torch.sin(theta1 + theta2)
+        dx_dphi2 = -l2 * torch.sin(theta1 + theta2)
+        dy_dphi1 =  l1 * torch.cos(theta1) + l2 * torch.cos(theta1 + theta2)
+        dy_dphi2 =  l2 * torch.cos(theta1 + theta2)
+        dr_dphi1 = (dx_dphi1 * x + dy_dphi1 * y) / self.L0
+        dr_dphi2 = (dx_dphi2 * x + dy_dphi2 * y) / self.L0
+        dtheta_dphi1 = (dy_dphi1 * x - dx_dphi1 * y) / (torch.square(self.L0))
+        dtheta_dphi2 = (dy_dphi2 * x - dx_dphi2 * y) / (torch.square(self.L0))
+        jacobian = [[dr_dphi1, dr_dphi2],[dtheta_dphi1, dtheta_dphi2]]
+        jacobian_transpose = [[jacobian[0][0], jacobian[1][0]],[jacobian[0][1], jacobian[1][1]]]
 
-        t21 = -self.cfg.asset.l2 * torch.sin(self.theta1 + self.theta2 - theta0)
-
-        t22 = -self.cfg.asset.l2 * torch.cos(self.theta1 + self.theta2 - theta0)
-        t22 = t22 / self.L0
-
-        T1 = t11 * F - t12 * T
-        T2 = t21 * F - t22 * T
-
+        T1 = jacobian_transpose[0][0] * F + jacobian_transpose[0][1] * T
+        T2 = jacobian_transpose[1][0] * F + jacobian_transpose[1][1] * T
         return T1, T2
+
+    # def VMC(self, F, T):
+    #     # the vmc theta frame is dif
+    #     theta0 = self.theta0 + self.pi / 2
+    #     t11 = self.cfg.asset.l1 * torch.sin(
+    #         theta0 - self.theta1
+    #     ) - self.cfg.asset.l2 * torch.sin(self.theta1 + self.theta2 - theta0)
+    #
+    #     t12 = self.cfg.asset.l1 * torch.cos(
+    #         theta0 - self.theta1
+    #     ) - self.cfg.asset.l2 * torch.cos(self.theta1 + self.theta2 - theta0)
+    #     t12 = t12 / self.L0
+    #
+    #     t21 = -self.cfg.asset.l2 * torch.sin(self.theta1 + self.theta2 - theta0)
+    #
+    #     t22 = -self.cfg.asset.l2 * torch.cos(self.theta1 + self.theta2 - theta0)
+    #     t22 = t22 / self.L0
+    #
+    #     T1 = t11 * F - t12 * T
+    #     T2 = t21 * F - t22 * T
+    #
+    #     return T1, T2
 
     def _get_noise_scale_vec(self, cfg):
         """Sets a vector used to scale the noise added to the observations.
