@@ -186,14 +186,31 @@ class DiabloVMC(Diablo):
 
         self.L0, self.theta0 = self.forward_kinematics(self.theta1, self.theta2)
 
-        dt = 0.001
-        L0_temp, theta0_temp = self.forward_kinematics(
-            self.theta1 + theta1_dot * dt, self.theta2 + theta2_dot * dt
-        )
-        self.L0_dot = (L0_temp - self.L0) / dt
-        self.theta0_dot = (theta0_temp - self.theta0) / dt
+        self.L0_dot, self.theta0_dot = self.calculate_vmc_vel()
         # print("L0=", self.L0)
         # print("theta0=", self.theta0)
+
+    def calculate_vmc_vel(self):
+        l1 = self.cfg.asset.l1
+        l2 = self.cfg.asset.l2
+        theta1 = self.theta1
+        theta2 = self.theta2
+        x = l1 * torch.cos(theta1) + l2 * torch.cos(theta1 + theta2)
+        y = l1 * torch.sin(theta1) + l2 * torch.sin(theta1 + theta2)
+
+        dx_dphi1 = -l1 * torch.sin(theta1) - l2 * torch.sin(theta1 + theta2)
+        dx_dphi2 = -l2 * torch.sin(theta1 + theta2)
+        dy_dphi1 =  l1 * torch.cos(theta1) + l2 * torch.cos(theta1 + theta2)
+        dy_dphi2 =  l2 * torch.cos(theta1 + theta2)
+        dr_dphi1 = (dx_dphi1 * x + dy_dphi1 * y) / self.L0
+        dr_dphi2 = (dx_dphi2 * x + dy_dphi2 * y) / self.L0
+        dtheta_dphi1 = (dy_dphi1 * x - dx_dphi1 * y) / (torch.square(self.L0))
+        dtheta_dphi2 = (dy_dphi2 * x - dx_dphi2 * y) / (torch.square(self.L0))
+        jacobian = [[dr_dphi1, dr_dphi2],[dtheta_dphi1, dtheta_dphi2]]
+
+        L0_dot = jacobian[0][0] * self.dof_vel[:,[0, 3]] + jacobian[0][1] * self.dof_vel[:,[1, 4]]
+        theta0_dot = jacobian[1][0] * self.dof_vel[:,[0, 3]] + jacobian[1][1] * self.dof_vel[:,[1, 4]]
+        return L0_dot, theta0_dot
 
     def forward_kinematics(self, theta1, theta2):
         end_x = (

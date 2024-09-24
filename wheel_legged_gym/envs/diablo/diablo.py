@@ -215,7 +215,7 @@ class Diablo(BaseTask):
             torch.norm(
                 self.contact_forces[:, self.termination_contact_indices, :], dim=-1
             )
-            > 0.1,
+            > 1.0,
             dim=1,
         )
         fail_buf |= self.projected_gravity[:, 2] > -0.8

@@ -39,7 +39,8 @@ class DiabloVMCCfg(DiabloCfg):
         num_privileged_obs = (
                 DiabloCfg.env.num_observations + 7 * 11 + 3 + 6 * 7 + 3 + 3
         )
-        fail_to_terminal_time_s = 0.7
+        fail_to_terminal_time_s = 2
+        episode_length_s = 20
 
     class rewards(DiabloCfg.rewards):
         class scales:
@@ -47,23 +48,23 @@ class DiabloVMCCfg(DiabloCfg):
             tracking_lin_vel_enhance = 1
             tracking_ang_vel = 1.0
 
-            base_height = 50.0
+            base_height = 5.0
             nominal_state = -0.2
-            lin_vel_z = -1.2
+            lin_vel_z = -3
             ang_vel_xy = -0.05
             orientation = -300.0
 
             dof_vel = -5e-5
             dof_acc = -2.5e-7
             torques = -0.1e-5
-            action_rate = -0.03
-            action_smooth = -0.03
+            action_rate = -0.5
+            action_smooth = -0.5
 
             collision = -1000.0
             dof_pos_limits = -3
 
-            theta_limit = -1
-            same_l = -0.3
+            theta_limit = -0.01
+            same_l = -0.01
 
         base_height_target = 0.30
 
@@ -100,6 +101,7 @@ class DiabloVMCCfg(DiabloCfg):
         damping = {"f0": 0.0, "f1": 0.0, "wheel": 0.8}  # [N*m*s/rad]
 
     class normalization(DiabloCfg.normalization):
+        add_noise = True
         class obs_scales(DiabloCfg.normalization.obs_scales):
             l0 = 5.0
             l0_dot = 0.25
@@ -111,17 +113,17 @@ class DiabloVMCCfg(DiabloCfg):
 
     class commands(DiabloCfg.commands):
         class ranges:
-            lin_vel_x = [-1.0, 1.0]  # min max [m/s]
+            lin_vel_x = [-5.0, 5.0]  # min max [m/s]
             ang_vel_yaw = [-3.14, 3.14]  # min max [rad/s]
             height = [0.20, 0.35]
             heading = [-3.14, 3.14]
     class domain_rand(DiabloCfg.domain_rand):
         randomize_friction = True
-        friction_range = [0.5, 1.5]
+        friction_range = [0.1, 2.0]
         randomize_restitution = True
         restitution_range = [0.0, 1.0]
         randomize_base_mass = True
-        added_mass_range = [-2.0, 2.0]
+        added_mass_range = [-2.0, 3.0]
         randomize_inertia = True
         randomize_inertia_range = [0.8, 1.2]
         randomize_base_com = True
@@ -130,11 +132,11 @@ class DiabloVMCCfg(DiabloCfg):
         push_interval_s = 7
         max_push_vel_xy = 2.0
         randomize_Kp = True
-        randomize_Kp_range = [0.9, 1.1]
+        randomize_Kp_range = [0.8, 1.2]
         randomize_Kd = True
-        randomize_Kd_range = [0.9, 1.1]
+        randomize_Kd_range = [0.8, 1.2]
         randomize_motor_torque = True
-        randomize_motor_torque_range = [0.9, 1.1]
+        randomize_motor_torque_range = [0.8, 1.2]
         randomize_default_dof_pos = True
         randomize_default_dof_pos_range = [-0.05, 0.05]
         randomize_action_delay = True
