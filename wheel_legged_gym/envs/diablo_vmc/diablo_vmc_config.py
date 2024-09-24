@@ -39,7 +39,7 @@ class DiabloVMCCfg(DiabloCfg):
         num_privileged_obs = (
                 DiabloCfg.env.num_observations + 7 * 11 + 3 + 6 * 7 + 3 + 3
         )
-        fail_to_terminal_time_s = 2
+        fail_to_terminal_time_s = 1
         episode_length_s = 20
 
     class terrain(DiabloCfg.terrain):
@@ -48,9 +48,9 @@ class DiabloVMCCfg(DiabloCfg):
         horizontal_scale = 0.1  # [m]
         vertical_scale = 0.005  # [m]
         border_size = 25  # [m]
-        curriculum = False
-        static_friction = 0.5
-        dynamic_friction = 0.5
+        curriculum = True
+        static_friction = 1
+        dynamic_friction = 0.
         restitution = 0.5
         # rough terrain only:
         measure_heights = True
@@ -76,7 +76,7 @@ class DiabloVMCCfg(DiabloCfg):
         num_rows = 4  # number of terrain rows (levels)
         num_cols = 4  # number of terrain cols (types)
         # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
-        terrain_proportions = [0.8, 0.0, 0.0, 0.2, 0.0, 0.0]
+        terrain_proportions = [1, 0.0, 0.0, 0., 0.0, 0.0]
         # trimesh only:
         slope_treshold = (
             0.75  # slopes above this threshold will be corrected to vertical surfaces
@@ -88,17 +88,17 @@ class DiabloVMCCfg(DiabloCfg):
             tracking_lin_vel_enhance = 1
             tracking_ang_vel = 1.0
 
-            base_height = 5.0
+            base_height = 20.0
             nominal_state = -0.2
-            lin_vel_z = -3
+            lin_vel_z = -1
             ang_vel_xy = -0.05
             orientation = -300.0
 
             dof_vel = -5e-5
             dof_acc = -2.5e-7
             torques = -0.1e-5
-            action_rate = -0.5
-            action_smooth = -0.5
+            action_rate = -0.01
+            action_smooth = -0.01
 
             collision = -1000.0
             dof_pos_limits = -3
