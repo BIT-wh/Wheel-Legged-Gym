@@ -36,33 +36,46 @@ from wheel_legged_gym.envs.diablo_vmc.diablo_vmc_config import (
 
 class DiabloVMCFlatCfg(DiabloVMCCfg):
 
-    class terrain(DiabloVMCCfg.terrain):
-        mesh_type = "plane"
-    class rewards(DiabloVMCCfg.rewards):
-        class scales:
-            tracking_lin_vel = 1.0
-            tracking_lin_vel_enhance = 1
-            tracking_ang_vel = 1.0
+    class terrain(DiabloVMCCfg):
+        mesh_type = "trimesh"
+        # mesh_type = "trimesh"  # "heightfield" # none, plane, heightfield or trimesh
+        horizontal_scale = 0.1  # [m]
+        vertical_scale = 0.005  # [m]
+        border_size = 25  # [m]
+        curriculum = False
+        static_friction = 0.5
+        dynamic_friction = 0.5
+        restitution = 0.5
+        # rough terrain only:
+        measure_heights = True
+        measured_points_x = [
+            -0.5,
+            -0.4,
+            -0.3,
+            -0.2,
+            -0.1,
+            0.0,
+            0.1,
+            0.2,
+            0.3,
+            0.4,
+            0.5,
+        ]  # 1mx1.6m rectangle (without center line)
+        measured_points_y = [-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3]
+        selected = False  # select a unique terrain type and pass all arguments
+        terrain_kwargs = None  # Dict of arguments for selected terrain
+        max_init_terrain_level = 0  # starting curriculum state
+        terrain_length = 8.0
+        terrain_width = 8.0
+        num_rows = 4  # number of terrain rows (levels)
+        num_cols = 4  # number of terrain cols (types)
+        # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
+        terrain_proportions = [0.8, 0.0, 0.0, 0.2, 0.0, 0.0]
+        # trimesh only:
+        slope_treshold = (
+            0.75  # slopes above this threshold will be corrected to vertical surfaces
+        )
 
-            base_height = 5.0
-            nominal_state = -0.2
-            lin_vel_z = -3
-            ang_vel_xy = -0.05
-            orientation = -300.0
-
-            dof_vel = -5e-5
-            dof_acc = -2.5e-7
-            torques = -0.1e-5
-            action_rate = -0.5
-            action_smooth = -0.5
-
-            collision = -1000.0
-            dof_pos_limits = -3
-
-            theta_limit = -0.01
-            same_l = -0.01
-
-        base_height_target = 0.30
 
 class DiabloVMCFlatCfgPPO(DiabloVMCCfgPPO):
 
@@ -71,5 +84,5 @@ class DiabloVMCFlatCfgPPO(DiabloVMCCfgPPO):
         # policy_class_name = (
         #     "ActorCriticSequence"  # could be ActorCritic, ActorCriticSequence
         # )
-        experiment_name = "diablo_vmc_flat"
+        experiment_name = "diablo_vmc_step"
         max_iterations = 30000
