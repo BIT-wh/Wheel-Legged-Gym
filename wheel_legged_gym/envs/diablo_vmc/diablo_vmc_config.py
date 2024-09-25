@@ -73,10 +73,10 @@ class DiabloVMCCfg(DiabloCfg):
         max_init_terrain_level = 0  # starting curriculum state
         terrain_length = 8.0
         terrain_width = 8.0
-        num_rows = 4  # number of terrain rows (levels)
-        num_cols = 4  # number of terrain cols (types)
+        num_rows = 8  # number of terrain rows (levels)
+        num_cols = 8  # number of terrain cols (types)
         # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
-        terrain_proportions = [1, 0.0, 0.0, 0., 0.0, 0.0]
+        terrain_proportions = [0.0, 0.0, 0.0, 1.0, 0.0, 0.0]
         # trimesh only:
         slope_treshold = (
             0.75  # slopes above this threshold will be corrected to vertical surfaces
@@ -84,13 +84,13 @@ class DiabloVMCCfg(DiabloCfg):
 
     class rewards(DiabloCfg.rewards):
         class scales:
-            tracking_lin_vel = 1.0
-            tracking_lin_vel_enhance = 1
-            tracking_ang_vel = 1.0
+            tracking_lin_vel = 5.0
+            tracking_lin_vel_enhance = 5
+            tracking_ang_vel = 5.0
 
-            base_height = 20.0
+            base_height = 0.1
             nominal_state = -0.2
-            lin_vel_z = -1
+            lin_vel_z = -0.1e-3
             ang_vel_xy = -0.05
             orientation = -300.0
 
@@ -100,11 +100,11 @@ class DiabloVMCCfg(DiabloCfg):
             action_rate = -0.01
             action_smooth = -0.01
 
-            collision = -1000.0
+            collision = -1.0
             dof_pos_limits = -3
 
-            theta_limit = -0.3
-            same_l = -0.01
+            theta_limit = -0.1e-8
+            same_l = -0.1e-8
 
         base_height_target = 0.30
 
