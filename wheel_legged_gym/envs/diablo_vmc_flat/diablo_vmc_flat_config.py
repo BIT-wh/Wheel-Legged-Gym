@@ -50,19 +50,19 @@ class DiabloVMCFlatCfg(DiabloVMCCfg):
             ang_vel_xy = -0.05
             orientation = -10.0
 
-            dof_vel = -5e-3
-            dof_acc = -2.5e-5
-            torques = -0.1e-5
-            action_rate = -0.05
-            action_smooth = -0.05
+            dof_vel = -5e-5
+            dof_acc = -2.5e-7
+            torques = -0.1e-4
+            action_rate = -0.01
+            action_smooth = -0.01
 
-            collision = -1000.0
-            dof_pos_limits = -3
+            collision = -100.0
+            dof_pos_limits = -1
 
-            theta_limit = -0.1
+            theta_limit = -0.01
             same_l = -0.1e-8
             # special for wheel
-            wheel_vel = -0.1
+            # wheel_vel = -0.01
 
         base_height_target = 0.30
     class control(DiabloVMCCfg.control):
@@ -105,7 +105,7 @@ class DiabloVMCFlatCfg(DiabloVMCCfg):
         randomize_motor_torque = True
         randomize_motor_torque_range = [0.8, 1.2]
         randomize_default_dof_pos = True
-        randomize_default_dof_pos_range = [-0.5, 0.5]
+        randomize_default_dof_pos_range = [-0.2, 0.2]
         randomize_action_delay = True
         delay_ms_range = [0, 10]
 class DiabloVMCFlatCfgPPO(DiabloVMCCfgPPO):

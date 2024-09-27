@@ -325,7 +325,7 @@ class DiabloVMC(Diablo):
             dim=-1,
         )
         # print(self.dof_pos[:, [2, 5]])
-        # print(self.actions)
+        # print(self.commands[:, :3])
         return obs_buf
 
     def compute_observations(self):
@@ -864,44 +864,6 @@ class DiabloVMC(Diablo):
                 )
             ).squeeze(-1)
             self.action_delay_idx = action_delay_idx.long()
-
-    def _resample_commands(self, env_ids):
-        """Randommly select commands of some environments
-
-        Args:
-            env_ids (List[int]): Environments ids for which new commands are needed
-        """
-        self.commands[env_ids, 0] = (
-                                            self.command_ranges["lin_vel_x"][env_ids, 1]
-                                            - self.command_ranges["lin_vel_x"][env_ids, 0]
-                                    ) * torch.rand(len(env_ids), device=self.device) + self.command_ranges[
-                                        "lin_vel_x"
-                                    ][
-                                        env_ids, 0
-                                    ]
-        self.commands[env_ids, 1] = (
-                                            self.command_ranges["ang_vel_yaw"][env_ids, 1]
-                                            - self.command_ranges["ang_vel_yaw"][env_ids, 0]
-                                    ) * torch.rand(len(env_ids), device=self.device) + self.command_ranges[
-                                        "ang_vel_yaw"
-                                    ][
-                                        env_ids, 0
-                                    ]
-        self.commands[env_ids, 2] = (
-                                            self.command_ranges["height"][env_ids, 1]
-                                            - self.command_ranges["height"][env_ids, 0]
-                                    ) * torch.rand(len(env_ids), device=self.device) + self.command_ranges[
-                                        "height"
-                                    ][
-                                        env_ids, 0
-                                    ]
-        if self.cfg.commands.heading_command:
-            self.commands[env_ids, 3] = torch_rand_float(
-                self.command_ranges["heading"][0],
-                self.command_ranges["heading"][1],
-                (len(env_ids), 1),
-                device=self.device,
-            ).squeeze(1)
 
     # ------------ reward functions----------------
     def _reward_theta_limit(self):

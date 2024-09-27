@@ -88,25 +88,25 @@ class DiabloVMCCfg(DiabloCfg):
             tracking_lin_vel_enhance = 1
             tracking_ang_vel = 1.0
 
-            base_height = 0.1
+            base_height = 0.5
             nominal_state = -0.1
             lin_vel_z = -0.1e-3
             ang_vel_xy = -0.05
-            orientation = -300.0
+            orientation = -100.0
 
             dof_vel = -5e-2
             dof_acc = -2.5e-3
             torques = -0.1e-5
-            action_rate = -10
-            action_smooth = -10
+            action_rate = -0.01
+            action_smooth = -0.01
 
             collision = -1.0
-            dof_pos_limits = -3
+            dof_pos_limits = -1
 
             theta_limit = -0.1e-8
             same_l = -0.1e-8
             # special for wheel
-            wheel_vel = -0.05
+            wheel_vel = -0.001
 
         base_height_target = 0.30
 
@@ -128,21 +128,20 @@ class DiabloVMCCfg(DiabloCfg):
         action_scale_l0 = 0.1
         action_scale_vel = 10.0
 
-        # what is l0_offset mean?
         l0_offset = 0.20
         # l0_offset = 0.
         feedforward_force = 60.0  # [N]
 
-        kp_theta = 60.0  # [N*m/rad]
-        kd_theta = 10.0  # [N*m*s/rad]
-        kp_l0 = 1000.0  # [N/m]
-        kd_l0 = 50.0  # [N*s/m]
+        # kp_theta = 60.0  # [N*m/rad]
+        # kd_theta = 10.0  # [N*m*s/rad]
+        # kp_l0 = 1000.0  # [N/m]
+        # kd_l0 = 50.0  # [N*s/m]
 
         # real max
-        # kp_theta = 13.0  # [N*m/rad]
-        # kd_theta = 1.5  # [N*m*s/rad]
-        # kp_l0 = 500.0  # [N/m]
-        # kd_l0 = 10.0  # [N*s/m]
+        kp_theta = 10.0  # [N*m/rad]
+        kd_theta = 1.  # [N*m*s/rad]
+        kp_l0 = 300.0  # [N/m]
+        kd_l0 = 8.0  # [N*s/m]
 
         # PD Drive parameters:
         stiffness = {"f0": 0.0, "f1": 0.0, "wheel": 0}  # [N*m/rad]
@@ -152,6 +151,8 @@ class DiabloVMCCfg(DiabloCfg):
         class obs_scales(DiabloCfg.normalization.obs_scales):
             l0 = 5.0
             l0_dot = 0.25
+            # wheel pos should be zero!
+            dof_pos = 0.0
 
     class noise(DiabloCfg.noise):
         class noise_scales(DiabloCfg.noise.noise_scales):
