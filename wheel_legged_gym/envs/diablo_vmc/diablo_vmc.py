@@ -876,5 +876,9 @@ class DiabloVMC(Diablo):
 
     def _reward_wheel_vel(self):
         # Penalize dof velocities
-        return torch.sum(torch.square(self.dof_vel[:, 2]) + torch.square(self.dof_vel[:, 5]))
+        left_wheel_vel = self.commands[:,0]/2 - self.commands[:,1]
+        right_wheel_vel = self.commands[:,0]/2 + self.commands[:,1]
+        return torch.sum(torch.square(self.dof_vel[:, 2] - left_wheel_vel) + torch.square(self.dof_vel[:, 5]) - right_wheel_vel)
+
+
 
