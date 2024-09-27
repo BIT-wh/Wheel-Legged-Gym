@@ -68,7 +68,7 @@ class DiabloVMCCfg(DiabloCfg):
             0.5,
         ]  # 1mx1.6m rectangle (without center line)
         measured_points_y = [-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3]
-        selected = False  # select a unique terrain type and pass all arguments
+        selected = True  # select a unique terrain type and pass all arguments
         terrain_kwargs = None  # Dict of arguments for selected terrain
         max_init_terrain_level = 0  # starting curriculum state
         terrain_length = 8.0
@@ -84,27 +84,29 @@ class DiabloVMCCfg(DiabloCfg):
 
     class rewards(DiabloCfg.rewards):
         class scales:
-            tracking_lin_vel = 5.0
-            tracking_lin_vel_enhance = 5
-            tracking_ang_vel = 5.0
+            tracking_lin_vel = 1.0
+            tracking_lin_vel_enhance = 1
+            tracking_ang_vel = 1.0
 
             base_height = 0.1
-            nominal_state = -0.2
+            nominal_state = -0.1
             lin_vel_z = -0.1e-3
             ang_vel_xy = -0.05
             orientation = -300.0
 
-            dof_vel = -5e-5
-            dof_acc = -2.5e-7
+            dof_vel = -5e-2
+            dof_acc = -2.5e-3
             torques = -0.1e-5
-            action_rate = -0.01
-            action_smooth = -0.01
+            action_rate = -10
+            action_smooth = -10
 
             collision = -1.0
             dof_pos_limits = -3
 
             theta_limit = -0.1e-8
             same_l = -0.1e-8
+            # special for wheel
+            wheel_vel = -0.05
 
         base_height_target = 0.30
 
@@ -136,12 +138,26 @@ class DiabloVMCCfg(DiabloCfg):
         kp_l0 = 1000.0  # [N/m]
         kd_l0 = 50.0  # [N*s/m]
 
+        # real max
+        # kp_theta = 13.0  # [N*m/rad]
+        # kd_theta = 1.5  # [N*m*s/rad]
+        # kp_l0 = 500.0  # [N/m]
+        # kd_l0 = 10.0  # [N*s/m]
+
         # PD Drive parameters:
         stiffness = {"f0": 0.0, "f1": 0.0, "wheel": 0}  # [N*m/rad]
         damping = {"f0": 0.0, "f1": 0.0, "wheel": 0.8}  # [N*m*s/rad]
 
     class normalization(DiabloCfg.normalization):
-        add_noise = False
+        add_noise = True
+        noise_level = 1.0  # scales other values
+        class noise_scales():
+            dof_pos = 0.0
+            dof_vel = 2.0
+            lin_vel = 0.1
+            ang_vel = 0.2
+            gravity = 0.05
+            height_measurements = 0.1
         class obs_scales(DiabloCfg.normalization.obs_scales):
             l0 = 5.0
             l0_dot = 0.25
@@ -158,28 +174,28 @@ class DiabloVMCCfg(DiabloCfg):
             height = [0.20, 0.35]
             heading = [-3.14, 3.14]
     class domain_rand(DiabloCfg.domain_rand):
-        randomize_friction = False
+        randomize_friction = True
         friction_range = [0.1, 2.0]
-        randomize_restitution = False
+        randomize_restitution = True
         restitution_range = [0.0, 1.0]
-        randomize_base_mass = False
+        randomize_base_mass = True
         added_mass_range = [-2.0, 3.0]
-        randomize_inertia = False
+        randomize_inertia = True
         randomize_inertia_range = [0.8, 1.2]
-        randomize_base_com = False
+        randomize_base_com = True
         rand_com_vec = [0.05, 0.05, 0.05]
-        push_robots = False
+        push_robots = True
         push_interval_s = 7
         max_push_vel_xy = 2.0
-        randomize_Kp = False
+        randomize_Kp = True
         randomize_Kp_range = [0.8, 1.2]
-        randomize_Kd = False
+        randomize_Kd = True
         randomize_Kd_range = [0.8, 1.2]
-        randomize_motor_torque = False
+        randomize_motor_torque = True
         randomize_motor_torque_range = [0.8, 1.2]
-        randomize_default_dof_pos = False
+        randomize_default_dof_pos = True
         randomize_default_dof_pos_range = [-0.05, 0.05]
-        randomize_action_delay = False
+        randomize_action_delay = True
         delay_ms_range = [0, 10]
 class DiabloVMCCfgPPO(DiabloCfgPPO):
 

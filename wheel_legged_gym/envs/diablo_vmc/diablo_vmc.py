@@ -318,7 +318,7 @@ class DiabloVMC(Diablo):
                 self.theta0_dot * self.obs_scales.dof_vel,
                 self.L0 * self.obs_scales.l0,
                 self.L0_dot * self.obs_scales.l0_dot,
-                self.dof_pos[:, [2, 5]] * self.obs_scales.dof_pos,
+                self.dof_pos[:, [2, 5]] * 0.,
                 self.dof_vel[:, [2, 5]] * self.obs_scales.dof_vel,
                 self.actions,
             ),
@@ -424,7 +424,7 @@ class DiabloVMC(Diablo):
                 wheel_vel_ref - self.dof_vel[:, [2, 5]]
         )
         T1, T2 = self.VMC(
-            self.force_leg + self.cfg.control.feedforward_force, self.torque_leg
+            self.force_leg + self.cfg.control.feedforward_force*torch.cos(self.theta0), self.torque_leg-self.cfg.control.feedforward_force*torch.sin(self.theta0)
         )
 
         torques = torch.cat(
@@ -873,3 +873,8 @@ class DiabloVMC(Diablo):
     def _reward_same_l(self):
         # Penalize l is too dif
         return torch.square(self.L0[:, 0] - self.L0[:, 1])
+
+    def _reward_wheel_vel(self):
+        # Penalize dof velocities
+        return torch.sum(torch.square(self.dof_vel[:, 2]) + torch.square(self.dof_vel[:, 5]))
+

@@ -44,26 +44,70 @@ class DiabloVMCFlatCfg(DiabloVMCCfg):
             tracking_lin_vel_enhance = 1
             tracking_ang_vel = 1.0
 
-            base_height = 5.0
-            nominal_state = -0.2
-            lin_vel_z = -1
+            base_height = 0.3
+            nominal_state = -0.1
+            lin_vel_z = -0.1e-3
             ang_vel_xy = -0.05
-            orientation = -300.0
+            orientation = -100.0
 
             dof_vel = -5e-5
             dof_acc = -2.5e-7
             torques = -0.1e-5
-            action_rate = -0.01
-            action_smooth = -0.01
+            action_rate = -0.5
+            action_smooth = -0.5
 
             collision = -1000.0
             dof_pos_limits = -3
 
-            theta_limit = -0.01
-            same_l = -0.01
+            theta_limit = -0.1e-8
+            same_l = -0.1e-8
+            # special for wheel
+            wheel_vel = -0.01
 
         base_height_target = 0.30
+    class control(DiabloVMCCfg.control):
+        l0_offset = 0.20
+        feedforward_force = 60.0  # [N]
 
+        # kp_theta = 60.0  # [N*m/rad]
+        # kd_theta = 10.0  # [N*m*s/rad]
+        # kp_l0 = 1000.0  # [N/m]
+        # kd_l0 = 50.0  # [N*s/m]
+
+        # real max
+        kp_theta = 10.0  # [N*m/rad]
+        kd_theta = 1.0  # [N*m*s/rad]
+        kp_l0 = 300.0  # [N/m]
+        kd_l0 = 8.0  # [N*s/m]
+
+        # PD Drive parameters:
+        stiffness = {"f0": 0.0, "f1": 0.0, "wheel": 0}  # [N*m/rad]
+        damping = {"f0": 0.0, "f1": 0.0, "wheel": 0.8}  # [N*m*s/rad]
+
+    class domain_rand(DiabloVMCCfg.domain_rand):
+        randomize_friction = True
+        friction_range = [0.1, 2.0]
+        randomize_restitution = True
+        restitution_range = [0.0, 1.0]
+        randomize_base_mass = True
+        added_mass_range = [-2.0, 3.0]
+        randomize_inertia = True
+        randomize_inertia_range = [0.8, 1.2]
+        randomize_base_com = True
+        rand_com_vec = [0.05, 0.05, 0.05]
+        push_robots = True
+        push_interval_s = 7
+        max_push_vel_xy = 2.0
+        randomize_Kp = True
+        randomize_Kp_range = [0.8, 1.2]
+        randomize_Kd = True
+        randomize_Kd_range = [0.8, 1.2]
+        randomize_motor_torque = True
+        randomize_motor_torque_range = [0.8, 1.2]
+        randomize_default_dof_pos = True
+        randomize_default_dof_pos_range = [-0.2, 0.2]
+        randomize_action_delay = True
+        delay_ms_range = [0, 10]
 class DiabloVMCFlatCfgPPO(DiabloVMCCfgPPO):
 
     class runner(DiabloVMCCfgPPO.runner):
