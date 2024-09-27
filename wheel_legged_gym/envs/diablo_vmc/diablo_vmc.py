@@ -318,7 +318,7 @@ class DiabloVMC(Diablo):
                 self.theta0_dot * self.obs_scales.dof_vel,
                 self.L0 * self.obs_scales.l0,
                 self.L0_dot * self.obs_scales.l0_dot,
-                self.dof_pos[:, [2, 5]] * 0.,
+                self.dof_pos[:, [2, 5]] * self.obs_scales.dof_pos,
                 self.dof_vel[:, [2, 5]] * self.obs_scales.dof_vel,
                 self.actions,
             ),
@@ -865,6 +865,44 @@ class DiabloVMC(Diablo):
             ).squeeze(-1)
             self.action_delay_idx = action_delay_idx.long()
 
+    def _resample_commands(self, env_ids):
+        """Randommly select commands of some environments
+
+        Args:
+            env_ids (List[int]): Environments ids for which new commands are needed
+        """
+        self.commands[env_ids, 0] = (
+                                            self.command_ranges["lin_vel_x"][env_ids, 1]
+                                            - self.command_ranges["lin_vel_x"][env_ids, 0]
+                                    ) * torch.rand(len(env_ids), device=self.device) + self.command_ranges[
+                                        "lin_vel_x"
+                                    ][
+                                        env_ids, 0
+                                    ]
+        self.commands[env_ids, 1] = (
+                                            self.command_ranges["ang_vel_yaw"][env_ids, 1]
+                                            - self.command_ranges["ang_vel_yaw"][env_ids, 0]
+                                    ) * torch.rand(len(env_ids), device=self.device) + self.command_ranges[
+                                        "ang_vel_yaw"
+                                    ][
+                                        env_ids, 0
+                                    ]
+        self.commands[env_ids, 2] = (
+                                            self.command_ranges["height"][env_ids, 1]
+                                            - self.command_ranges["height"][env_ids, 0]
+                                    ) * torch.rand(len(env_ids), device=self.device) + self.command_ranges[
+                                        "height"
+                                    ][
+                                        env_ids, 0
+                                    ]
+        if self.cfg.commands.heading_command:
+            self.commands[env_ids, 3] = torch_rand_float(
+                self.command_ranges["heading"][0],
+                self.command_ranges["heading"][1],
+                (len(env_ids), 1),
+                device=self.device,
+            ).squeeze(1)
+
     # ------------ reward functions----------------
     def _reward_theta_limit(self):
         # Penalize theta is too huge
@@ -876,9 +914,12 @@ class DiabloVMC(Diablo):
 
     def _reward_wheel_vel(self):
         # Penalize dof velocities
-        left_wheel_vel = self.commands[:,0]/2 - self.commands[:,1]
-        right_wheel_vel = self.commands[:,0]/2 + self.commands[:,1]
-        return torch.sum(torch.square(self.dof_vel[:, 2] - left_wheel_vel) + torch.square(self.dof_vel[:, 5]) - right_wheel_vel)
+        # left_wheel_vel = self.commands[:,0]/2 - self.commands[:,1]
+        # right_wheel_vel = self.commands[:,0]/2 + self.commands[:,1]
+        # return torch.sum(torch.square(self.dof_vel[:, 2] - left_wheel_vel) + torch.square(self.dof_vel[:, 5]) - right_wheel_vel)
+        return torch.sum(torch.square(self.dof_vel[:, 2]) + torch.square(self.dof_vel[:, 5]))
 
-
+    def _reward_static_action_rate(self):
+        # When the order remains unchanged, the punishment action rate is higher
+        return torch.square(self.L0[:, 0] - self.L0[:, 1])
 

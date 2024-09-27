@@ -131,7 +131,7 @@ class DiabloVMCCfg(DiabloCfg):
         # what is l0_offset mean?
         l0_offset = 0.20
         # l0_offset = 0.
-        feedforward_force = 55.0  # [N]
+        feedforward_force = 60.0  # [N]
 
         kp_theta = 60.0  # [N*m/rad]
         kd_theta = 10.0  # [N*m*s/rad]
@@ -149,15 +149,6 @@ class DiabloVMCCfg(DiabloCfg):
         damping = {"f0": 0.0, "f1": 0.0, "wheel": 0.8}  # [N*m*s/rad]
 
     class normalization(DiabloCfg.normalization):
-        add_noise = True
-        noise_level = 1.0  # scales other values
-        class noise_scales():
-            dof_pos = 0.0
-            dof_vel = 2.0
-            lin_vel = 0.1
-            ang_vel = 0.2
-            gravity = 0.05
-            height_measurements = 0.1
         class obs_scales(DiabloCfg.normalization.obs_scales):
             l0 = 5.0
             l0_dot = 0.25
