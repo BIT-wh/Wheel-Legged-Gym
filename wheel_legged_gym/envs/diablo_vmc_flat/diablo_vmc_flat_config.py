@@ -44,11 +44,11 @@ class DiabloVMCFlatCfg(DiabloVMCCfg):
             tracking_lin_vel_enhance = 1
             tracking_ang_vel = 1.0
 
-            base_height = 0.3
+            base_height = 0.5
             nominal_state = -0.1
             lin_vel_z = -0.1e-3
             ang_vel_xy = -0.05
-            orientation = -10.0
+            orientation = -200.0
 
             dof_vel = -5e-5
             dof_acc = -2.5e-7

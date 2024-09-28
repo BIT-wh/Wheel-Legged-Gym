@@ -28,21 +28,21 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
-from wheel_legged_gym.envs.diablo_vmc.diablo_vmc_config import (
-    DiabloVMCCfg,
-    DiabloVMCCfgPPO,
+from wheel_legged_gym.envs.diablo_vmc_flat.diablo_vmc_flat_config import (
+    DiabloVMCFlatCfg,
+    DiabloVMCFlatCfgPPO,
 )
 
 
-class DiabloVMCFlatCfg(DiabloVMCCfg):
+class DiabloVMCStepCfg(DiabloVMCFlatCfg):
 
-    class terrain(DiabloVMCCfg):
+    class terrain(DiabloVMCFlatCfg):
         mesh_type = "trimesh"
         # mesh_type = "trimesh"  # "heightfield" # none, plane, heightfield or trimesh
         horizontal_scale = 0.1  # [m]
         vertical_scale = 0.005  # [m]
         border_size = 25  # [m]
-        curriculum = False
+        curriculum = True
         static_friction = 0.5
         dynamic_friction = 0.5
         restitution = 0.5
@@ -70,16 +70,16 @@ class DiabloVMCFlatCfg(DiabloVMCCfg):
         num_rows = 4  # number of terrain rows (levels)
         num_cols = 4  # number of terrain cols (types)
         # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
-        terrain_proportions = [0.8, 0.0, 0.0, 0.2, 0.0, 0.0]
+        terrain_proportions = [0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
         # trimesh only:
         slope_treshold = (
             0.75  # slopes above this threshold will be corrected to vertical surfaces
         )
 
 
-class DiabloVMCFlatCfgPPO(DiabloVMCCfgPPO):
+class DiabloVMCStepCfgPPO(DiabloVMCFlatCfgPPO):
 
-    class runner(DiabloVMCCfgPPO.runner):
+    class runner(DiabloVMCFlatCfgPPO.runner):
         # logging
         # policy_class_name = (
         #     "ActorCriticSequence"  # could be ActorCritic, ActorCriticSequence
