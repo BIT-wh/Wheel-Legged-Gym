@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
+from networkx.algorithms.tournament import tournament_matrix
 
 from wheel_legged_gym import WHEEL_LEGGED_GYM_ROOT_DIR, envs
 from time import time
@@ -170,29 +171,22 @@ class DiabloASM(BaseTask):
         self.dof_acc = (self.last_dof_vel - self.dof_vel) / self.dt
 
         # change from original for the joint tf is different！
-        theta1 = torch.cat(
+        self.theta1 = torch.cat(
             (self.dof_pos[:, 0].unsqueeze(1) + self.pi - 0.13433,
              self.dof_pos[:, 3].unsqueeze(1) + self.pi - 0.13433
              ),
             dim=1
         )
-        theta2 = torch.cat(
+        self.theta2 = torch.cat(
             (
                 (self.dof_pos[:, 1] - self.pi - 0.26866).unsqueeze(1),
                 (self.dof_pos[:, 4] - self.pi - 0.26866).unsqueeze(1),
             ),
             dim=1,
         )
-        end_x = (
-            self.cfg.asset.offset
-            + self.cfg.asset.l1 * torch.cos(theta1)
-            + self.cfg.asset.l2 * torch.cos(theta1 + theta2)
-        )
-        end_y = self.cfg.asset.l1 * torch.sin(theta1) + self.cfg.asset.l2 * torch.sin(
-            theta1 + theta2
-        )
-        self.L0 = torch.sqrt(end_x**2 + end_y**2)
-        self.theta0 = torch.arctan2(end_y, end_x) - self.pi / 2
+
+        self.L0, self.theta0 = self.forward_kinematics(self.theta1, self.theta2)
+        self.L0_dot, self.theta0_dot = self.calculate_vmc_vel()
 
         self._post_physics_step_callback()
 
@@ -211,6 +205,41 @@ class DiabloASM(BaseTask):
 
         if self.viewer and self.enable_viewer_sync and self.debug_viz:
             self._draw_debug_vis()
+
+    def forward_kinematics(self, theta1, theta2):
+        end_x = (
+                self.cfg.asset.offset
+                + self.cfg.asset.l1 * torch.cos(theta1)
+                + self.cfg.asset.l2 * torch.cos(theta1 + theta2)
+        )
+        end_y = self.cfg.asset.l1 * torch.sin(theta1) + self.cfg.asset.l2 * torch.sin(
+            theta1 + theta2
+        )
+        L0 = torch.sqrt(end_x ** 2 + end_y ** 2)
+        theta0 = torch.arctan2(end_y, end_x) - self.pi / 2
+        return L0, theta0
+
+    def calculate_vmc_vel(self):
+        l1 = self.cfg.asset.l1
+        l2 = self.cfg.asset.l2
+        theta1 = self.theta1
+        theta2 = self.theta2
+        x = l1 * torch.cos(theta1) + l2 * torch.cos(theta1 + theta2)
+        y = l1 * torch.sin(theta1) + l2 * torch.sin(theta1 + theta2)
+
+        dx_dphi1 = -l1 * torch.sin(theta1) - l2 * torch.sin(theta1 + theta2)
+        dx_dphi2 = -l2 * torch.sin(theta1 + theta2)
+        dy_dphi1 =  l1 * torch.cos(theta1) + l2 * torch.cos(theta1 + theta2)
+        dy_dphi2 =  l2 * torch.cos(theta1 + theta2)
+        dr_dphi1 = (dx_dphi1 * x + dy_dphi1 * y) / self.L0
+        dr_dphi2 = (dx_dphi2 * x + dy_dphi2 * y) / self.L0
+        dtheta_dphi1 = (dy_dphi1 * x - dx_dphi1 * y) / (torch.square(self.L0))
+        dtheta_dphi2 = (dy_dphi2 * x - dx_dphi2 * y) / (torch.square(self.L0))
+        jacobian = [[dr_dphi1, dr_dphi2],[dtheta_dphi1, dtheta_dphi2]]
+
+        L0_dot = jacobian[0][0] * self.dof_vel[:,[0, 3]] + jacobian[0][1] * self.dof_vel[:,[1, 4]]
+        theta0_dot = jacobian[1][0] * self.dof_vel[:,[0, 3]] + jacobian[1][1] * self.dof_vel[:,[1, 4]]
+        return L0_dot, theta0_dot
 
     def check_termination(self):
         """Check if environments need to be reset"""
@@ -346,6 +375,8 @@ class DiabloASM(BaseTask):
 
     def compute_proprioception_observations(self):
         # note that observation noise need to modified accordingly !!!
+        # Let the wheel pos to be zero!!!!
+        self.dof_pos[:, [2, 5]] = 0.
         obs_buf = torch.cat(
             (
                 self.base_ang_vel * self.obs_scales.ang_vel,
@@ -357,7 +388,7 @@ class DiabloASM(BaseTask):
             ),
             dim=-1,
         )
-        print(self.dof_vel[:, [2, 5]])
+        # print(self.dof_pos[:, [2, 5]])
         return obs_buf
 
     def compute_observations(self):
@@ -1808,3 +1839,57 @@ class DiabloASM(BaseTask):
             ).clip(min=0.0),
             dim=1,
         )
+
+    def _reward_theta_limit(self):
+        # Penalize theta is too huge
+        return torch.sum(torch.square(self.theta0[:, :2]), dim=1)
+
+    def _reward_same_l(self):
+        # Penalize l is too dif
+        return torch.square(self.L0[:, 0] - self.L0[:, 1])
+
+    def _reward_wheel_vel(self):
+        # Penalize dof velocities
+        # left_wheel_vel = self.commands[:,0]/2 - self.commands[:,1]
+        # right_wheel_vel = self.commands[:,0]/2 + self.commands[:,1]
+        # return torch.sum(torch.square(self.dof_vel[:, 2] - left_wheel_vel) + torch.square(self.dof_vel[:, 5]) - right_wheel_vel)
+        return torch.sum(torch.square(self.dof_vel[:, 2]) + torch.square(self.dof_vel[:, 5]))
+
+    def _reward_block_l(self):
+        vel_x_des = self.commands[:,0]
+        vel_yaw_des = self.commands[:,1]
+        left_wheel_vel_des = vel_x_des/2 - vel_yaw_des
+        right_wheel_vel_des = vel_x_des/2 + vel_yaw_des
+        left_wheel_vel_err = left_wheel_vel_des - self.dof_vel[:, 2]
+        right_wheel_vel_err = right_wheel_vel_des - self.dof_vel[:, 5]
+
+        # left_vel_err_condition = abs(left_wheel_vel_err) >= 1.0
+        # right_vel_err_condition = abs(right_wheel_vel_err) >= 1.0
+
+        left_vel_err_condition = True
+        right_vel_err_condition = True
+
+        left_tau_condition = torch.all(abs(self.torques[2]) > 1) and torch.all(abs(self.dof_vel[2]) < 2)
+        right_tau_condition = torch.all(abs(self.torques[5]) > 1) and torch.all(abs(self.dof_vel[5]) < 2)
+
+        # left_wheel_block = torch.all(left_vel_err_condition) and torch.all(left_tau_condition)
+        # right_wheel_block = torch.all(right_vel_err_condition) and torch.all(right_tau_condition)
+
+        left_wheel_block = left_tau_condition
+        right_wheel_block = right_tau_condition
+
+        if left_wheel_block and right_wheel_block:
+            return torch.square(self.L0[:, 0] - self.L0[:, 1]) + torch.square(self.L0_dot[:, 0]) + torch.square(self.L0_dot[:, 1]) + torch.square(self.theta0_dot[:,1]) + torch.square(self.theta0_dot[:,0])
+        elif not left_wheel_block and right_wheel_block:
+            return self.L0[:, 1] - self.L0[:, 0] + torch.square(self.L0_dot[:,1]) + torch.square(self.theta0_dot[:,1])
+        elif left_wheel_block and not right_wheel_block:
+            return self.L0[:, 0] - self.L0[:, 1] + torch.square(self.L0_dot[:,0]) + torch.square(self.theta0_dot[:,0])
+        else:
+            return torch.tensor(0.0)
+
+
+    # def _reward_block_wheel_tau(self):
+    #     return torch.sum(torch.square(self.dof_vel[:, 2]) + torch.square(self.dof_vel[:, 5]))
+    #
+    # def _reward_block_l_vel(self):
+    #     return torch.sum(torch.square(self.dof_vel[:, 2]) + torch.square(self.dof_vel[:, 5]))

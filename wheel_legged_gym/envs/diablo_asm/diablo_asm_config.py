@@ -48,7 +48,8 @@ class DiabloASMCfg(BaseConfig):
         fail_to_terminal_time_s = 1
 
     class terrain:
-        mesh_type = "plane"
+        # mesh_type = "plane"
+        mesh_type = "trimesh"
         # mesh_type = "trimesh"  # "heightfield" # none, plane, heightfield or trimesh
         horizontal_scale = 0.1  # [m]
         vertical_scale = 0.005  # [m]
@@ -81,7 +82,7 @@ class DiabloASMCfg(BaseConfig):
         num_rows = 10  # number of terrain rows (levels)
         num_cols = 20  # number of terrain cols (types)
         # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
-        terrain_proportions = [0.2, 0.2, 0.2, 0.1, 0.2, 0.1]
+        terrain_proportions = [0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
         # trimesh only:
         slope_treshold = (
             0.75  # slopes above this threshold will be corrected to vertical surfaces
@@ -103,16 +104,16 @@ class DiabloASMCfg(BaseConfig):
             heading = [-3.14, 3.14]
 
     class init_state:
-        pos = [0.0, 0.0, 0.15]  # x,y,z [m]
+        pos = [0.0, 0.0, 0.3]  # x,y,z [m]
         rot = [0.0, 0.0, 0.0, 1.0]  # x,y,z,w [quat]
         lin_vel = [0.0, 0.0, 0.0]  # x,y,z [m/s]
         ang_vel = [0.0, 0.0, 0.0]  # x,y,z [rad/s]
         default_joint_angles = {  # target angles when action = 0.0
-            "left_fake_hip_joint": 0.0,
-            "left_fake_knee_joint": 0.0,
+            "left_fake_hip_joint": -0.5,
+            "left_fake_knee_joint": 1.0,
             "left_wheel_joint": 0.0,
-            "right_fake_hip_joint": 0.0,
-            "right_fake_knee_joint": 0.0,
+            "right_fake_hip_joint": -0.5,
+            "right_fake_knee_joint": 1.0,
             "right_wheel_joint": 0.0,
         }
 
@@ -174,7 +175,7 @@ class DiabloASMCfg(BaseConfig):
         randomize_motor_torque = True
         randomize_motor_torque_range = [0.9, 1.1]
         randomize_default_dof_pos = True
-        randomize_default_dof_pos_range = [-0.05, 0.05]
+        randomize_default_dof_pos_range = [-0.5, 0.5]
         randomize_action_delay = True
         delay_ms_range = [0, 10]
 
@@ -184,23 +185,25 @@ class DiabloASMCfg(BaseConfig):
             tracking_lin_vel_enhance = 1
             tracking_ang_vel = 1.0
 
-            base_height = 1.0
+            base_height = 2.0
             nominal_state = -0.1
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
-            orientation = -50.0
+            orientation = -100.0
 
             dof_vel = -5e-5
             dof_acc = -2.5e-7
-            torques = -0.0001
+            torques = -0.001
             action_rate = -0.03
             action_smooth = -0.03
 
             collision = -1.0
             dof_pos_limits = -1.0
 
-            # theta_limit = -0.01
-            # same_l = -0.1e-8
+            theta_limit = -0.2
+            # same_l = 0.1e-5
+            wheel_vel = -0.1
+            # block_l = 400
 
         only_positive_rewards = False  # if true negative total rewards are clipped at zero (avoids early termination problems)
         clip_single_reward = 1
@@ -309,7 +312,7 @@ class DiabloASMCfgPPO(BaseConfig):
         )
         algorithm_class_name = "PPO"
         num_steps_per_env = 48  # per iteration
-        max_iterations = 5000  # number of policy updates
+        max_iterations = 50000  # number of policy updates
 
         # logging
         save_interval = 100  # check for potential saves every this many iterations
