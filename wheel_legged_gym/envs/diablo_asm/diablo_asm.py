@@ -97,6 +97,7 @@ class DiabloASM(BaseTask):
         self.render()
         self.pre_physics_step()
         for _ in range(self.cfg.control.decimation):
+            self.leg_post_physics_step()
             self.envs_steps_buf += 1
             self.action_fifo = torch.cat(
                 (self.actions.unsqueeze(1), self.action_fifo[:, :-1, :]), dim=1
@@ -146,6 +147,25 @@ class DiabloASM(BaseTask):
 
         self.last_dof_pos[:] = self.dof_pos[:]
 
+    def leg_post_physics_step(self):
+        # change from original for the joint tf is different！
+        self.theta1 = torch.cat(
+            (self.dof_pos[:, 0].unsqueeze(1) + self.pi - 0.13433,
+             self.dof_pos[:, 3].unsqueeze(1) + self.pi - 0.13433
+             ),
+            dim=1
+        )
+        self.theta2 = torch.cat(
+            (
+                (self.dof_pos[:, 1] - self.pi - 0.26866).unsqueeze(1),
+                (self.dof_pos[:, 4] - self.pi - 0.26866).unsqueeze(1),
+            ),
+            dim=1,
+        )
+
+        self.L0, self.theta0 = self.forward_kinematics(self.theta1, self.theta2)
+        self.L0_dot, self.theta0_dot = self.calculate_vmc_vel()
+
     def post_physics_step(self):
         """check terminations, compute observations and rewards
         calls self._post_physics_step_callback() for common computations
@@ -169,24 +189,6 @@ class DiabloASM(BaseTask):
             self.base_quat, self.gravity_vec
         )
         self.dof_acc = (self.last_dof_vel - self.dof_vel) / self.dt
-
-        # change from original for the joint tf is different！
-        self.theta1 = torch.cat(
-            (self.dof_pos[:, 0].unsqueeze(1) + self.pi - 0.13433,
-             self.dof_pos[:, 3].unsqueeze(1) + self.pi - 0.13433
-             ),
-            dim=1
-        )
-        self.theta2 = torch.cat(
-            (
-                (self.dof_pos[:, 1] - self.pi - 0.26866).unsqueeze(1),
-                (self.dof_pos[:, 4] - self.pi - 0.26866).unsqueeze(1),
-            ),
-            dim=1,
-        )
-
-        self.L0, self.theta0 = self.forward_kinematics(self.theta1, self.theta2)
-        self.L0_dot, self.theta0_dot = self.calculate_vmc_vel()
 
         self._post_physics_step_callback()
 
@@ -716,9 +718,42 @@ class DiabloASM(BaseTask):
         torques = self.p_gains * (
             pos_ref + self.default_dof_pos - self.dof_pos
         ) + self.d_gains * (vel_ref - self.dof_vel)
+
+        # T1, T2 = self.VMC(
+        #     self.cfg.control.feedforward_force, 0.
+        # )
+        #
+        # torques[:,0] += T1[:, 0]
+        # torques[:,3] += T1[:, 1]
+        # torques[:,1] += T2[:, 0]
+        # torques[:,4] += T2[:, 1]
+
         return torch.clip(
             torques * self.torques_scale, -self.torque_limits, self.torque_limits
         )
+
+    def VMC(self, F, T):
+        l1 = self.cfg.asset.l1
+        l2 = self.cfg.asset.l2
+        theta1 = self.theta1
+        theta2 = self.theta2
+        x = l1 * torch.cos(theta1) + l2 * torch.cos(theta1 + theta2)
+        y = l1 * torch.sin(theta1) + l2 * torch.sin(theta1 + theta2)
+
+        dx_dphi1 = -l1 * torch.sin(theta1) - l2 * torch.sin(theta1 + theta2)
+        dx_dphi2 = -l2 * torch.sin(theta1 + theta2)
+        dy_dphi1 =  l1 * torch.cos(theta1) + l2 * torch.cos(theta1 + theta2)
+        dy_dphi2 =  l2 * torch.cos(theta1 + theta2)
+        dr_dphi1 = (dx_dphi1 * x + dy_dphi1 * y) / self.L0
+        dr_dphi2 = (dx_dphi2 * x + dy_dphi2 * y) / self.L0
+        dtheta_dphi1 = (dy_dphi1 * x - dx_dphi1 * y) / (torch.square(self.L0))
+        dtheta_dphi2 = (dy_dphi2 * x - dx_dphi2 * y) / (torch.square(self.L0))
+        jacobian = [[dr_dphi1, dr_dphi2],[dtheta_dphi1, dtheta_dphi2]]
+        jacobian_transpose = [[jacobian[0][0], jacobian[1][0]],[jacobian[0][1], jacobian[1][1]]]
+
+        T1 = jacobian_transpose[0][0] * F + jacobian_transpose[0][1] * T
+        T2 = jacobian_transpose[1][0] * F + jacobian_transpose[1][1] * T
+        return T1, T2
 
     def _reset_dofs(self, env_ids):
         """Resets DOF position and velocities of selected environmments

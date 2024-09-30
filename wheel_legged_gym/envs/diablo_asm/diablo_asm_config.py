@@ -48,8 +48,8 @@ class DiabloASMCfg(BaseConfig):
         fail_to_terminal_time_s = 1
 
     class terrain:
-        # mesh_type = "plane"
-        mesh_type = "trimesh"
+        mesh_type = "plane"
+        # mesh_type = "trimesh"
         # mesh_type = "trimesh"  # "heightfield" # none, plane, heightfield or trimesh
         horizontal_scale = 0.1  # [m]
         vertical_scale = 0.005  # [m]
@@ -82,7 +82,7 @@ class DiabloASMCfg(BaseConfig):
         num_rows = 10  # number of terrain rows (levels)
         num_cols = 20  # number of terrain cols (types)
         # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
-        terrain_proportions = [0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+        terrain_proportions = [0.0, 0.5, 0.5, 0.0, 0.0, 0.0]
         # trimesh only:
         slope_treshold = (
             0.75  # slopes above this threshold will be corrected to vertical surfaces
@@ -120,14 +120,15 @@ class DiabloASMCfg(BaseConfig):
     class control:
         control_type = "P"  # P: position, V: velocity, T: torques
         # PD Drive parameters:
-        stiffness = {"hip": 20.0, "knee": 20.0, "wheel": 0}  # [N*m/rad]
-        damping = {"hip": 0.3, "knee": 0.3, "wheel": 0.6}  # [N*m*s/rad]
+        stiffness = {"hip": 30.0, "knee": 40.0, "wheel": 0}  # [N*m/rad]
+        damping = {"hip": 0.5, "knee": 0.7, "wheel": 0.3}  # [N*m*s/rad]
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.5
         # decimation: Number of control action updates @ sim DT per policy DT
         decimation = 2
         pos_action_scale = 0.5
         vel_action_scale = 10.0
+        feedforward_force = 60.0
 
     class asset:
         file = "{WHEEL_LEGGED_GYM_ROOT_DIR}/resources/robots/diablo/urdf/diablo_ASM.urdf"
@@ -175,7 +176,7 @@ class DiabloASMCfg(BaseConfig):
         randomize_motor_torque = True
         randomize_motor_torque_range = [0.9, 1.1]
         randomize_default_dof_pos = True
-        randomize_default_dof_pos_range = [-0.5, 0.5]
+        randomize_default_dof_pos_range = [-0.3, 0.3]
         randomize_action_delay = True
         delay_ms_range = [0, 10]
 
@@ -185,11 +186,11 @@ class DiabloASMCfg(BaseConfig):
             tracking_lin_vel_enhance = 1
             tracking_ang_vel = 1.0
 
-            base_height = 2.0
+            base_height = 5.0
             nominal_state = -0.1
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
-            orientation = -100.0
+            orientation = -200.0
 
             dof_vel = -5e-5
             dof_acc = -2.5e-7
@@ -200,8 +201,8 @@ class DiabloASMCfg(BaseConfig):
             collision = -1.0
             dof_pos_limits = -1.0
 
-            theta_limit = -0.2
-            # same_l = 0.1e-5
+            theta_limit = -0.01
+            same_l = 0.1e-5
             wheel_vel = -0.1
             # block_l = 400
 
@@ -231,7 +232,7 @@ class DiabloASMCfg(BaseConfig):
 
     class noise:
         add_noise = True
-        noise_level = 1.0  # scales other values
+        noise_level = 0.5  # scales other values
 
         class noise_scales:
             dof_pos = 0.1
