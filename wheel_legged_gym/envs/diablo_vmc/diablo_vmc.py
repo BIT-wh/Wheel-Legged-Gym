@@ -89,6 +89,8 @@ class DiabloVMC(Diablo):
             self.action_fifo = torch.cat(
                 (self.actions.unsqueeze(1), self.action_fifo[:, :-1, :]), dim=1
             )
+            print('-------------------------------------')
+            print('selaction',self.action_fifo)
             self.torques = self._compute_torques(
                 self.action_fifo[torch.arange(self.num_envs), self.action_delay_idx, :]
             ).view(self.torques.shape)

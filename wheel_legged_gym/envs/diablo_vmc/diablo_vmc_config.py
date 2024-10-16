@@ -39,7 +39,7 @@ class DiabloVMCCfg(DiabloCfg):
         num_privileged_obs = (
                 DiabloCfg.env.num_observations + 7 * 11 + 3 + 6 * 7 + 3 + 3
         )
-        fail_to_terminal_time_s = 1
+        fail_to_terminal_time_s = 0.5
         episode_length_s = 20
 
     class terrain(DiabloCfg.terrain):

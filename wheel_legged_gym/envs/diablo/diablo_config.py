@@ -97,9 +97,9 @@ class DiabloCfg(BaseConfig):
         heading_command = True  # if true: compute ang vel command from heading error
 
         class ranges:
-            lin_vel_x = [-5.0, 5.0]  # min max [m/s]
-            ang_vel_yaw = [-3.14, 3.14]  # min max [rad/s]
-            height = [0.18, 0.25]
+            lin_vel_x = [-1.0, 1.0]  # min max [m/s]
+            ang_vel_yaw = [-1, 1]  # min max [rad/s]
+            height = [0.18, 0.35]
             heading = [-3.14, 3.14]
 
     class init_state:
@@ -108,11 +108,11 @@ class DiabloCfg(BaseConfig):
         lin_vel = [0.0, 0.0, 0.0]  # x,y,z [m/s]
         ang_vel = [0.0, 0.0, 0.0]  # x,y,z [rad/s]
         default_joint_angles = {  # target angles when action = 0.0
-            "left_hip_joint": 0.65,
-            "left_knee_joint": -1.25,
+            "left_hip_joint": 0.4,
+            "left_knee_joint": -0.8,
             "left_wheel_joint": 0.0,
-            "right_hip_joint": 0.65,
-            "right_knee_joint": -1.25,
+            "right_hip_joint": 0.4,
+            "right_knee_joint": -0.8,
             "right_wheel_joint": 0.0,
         }
 
@@ -124,7 +124,7 @@ class DiabloCfg(BaseConfig):
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.5
         # decimation: Number of control action updates @ sim DT per policy DT
-        decimation = 2
+        decimation = 10
         pos_action_scale = 0.5
         vel_action_scale = 10.0
 
@@ -164,7 +164,7 @@ class DiabloCfg(BaseConfig):
         randomize_inertia_range = [0.8, 1.2]
         randomize_base_com = True
         rand_com_vec = [0.05, 0.05, 0.05]
-        push_robots = True
+        push_robots = False
         push_interval_s = 7
         max_push_vel_xy = 2.0
         randomize_Kp = True
@@ -242,7 +242,7 @@ class DiabloCfg(BaseConfig):
         lookat = [0, 0, 0]  # [m]
 
     class sim:
-        dt = 0.005
+        dt = 0.001
         substeps = 1
         gravity = [0.0, 0.0, -9.81]  # [m/s^2]
         up_axis = 1  # 0 is y, 1 is z
@@ -268,7 +268,7 @@ class DiabloCfgPPO(BaseConfig):
     runner_class_name = "OnPolicyRunner"
 
     class policy:
-        init_noise_std = 0.5
+        init_noise_std = 1
         actor_hidden_dims = [128, 64, 32]
         critic_hidden_dims = [256, 128, 64]
         activation = "elu"  # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
@@ -288,22 +288,22 @@ class DiabloCfgPPO(BaseConfig):
         entropy_coef = 0.01
         num_learning_epochs = 5
         num_mini_batches = 4  # mini batch size = num_envs*nsteps / nminibatches
-        learning_rate = 1.0e-3  # 5.e-4
+        learning_rate = 5.0e-4  # 5.e-4
         schedule = "adaptive"  # could be adaptive, fixed
         gamma = 0.99
         lam = 0.95
         desired_kl = 0.005
         max_grad_norm = 1.0
 
-        extra_learning_rate = 1e-3
+        extra_learning_rate = 5e-4
 
     class runner:
-        # policy_class_name = (
-        #     "ActorCriticSequence"  # could be ActorCritic, ActorCriticSequence
-        # )
         policy_class_name = (
-            "ActorCritic"  # could be ActorCritic, ActorCriticSequence
+            "ActorCriticSequence"  # could be ActorCritic, ActorCriticSequence
         )
+        # policy_class_name = (
+        #     "ActorCritic"  # could be ActorCritic, ActorCriticSequence
+        # )
         algorithm_class_name = "PPO"
         num_steps_per_env = 48  # per iteration
         max_iterations = 5000  # number of policy updates

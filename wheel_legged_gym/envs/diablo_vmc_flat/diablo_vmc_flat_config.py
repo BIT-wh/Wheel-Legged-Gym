@@ -46,9 +46,9 @@ class DiabloVMCFlatCfg(DiabloVMCCfg):
 
             base_height = 0.5
             nominal_state = -0.1
-            lin_vel_z = -0.1e-3
+            lin_vel_z = -5e-2
             ang_vel_xy = -0.05
-            orientation = -200.0
+            orientation = -20.0
 
             dof_vel = -5e-5
             dof_acc = -2.5e-7
@@ -56,7 +56,7 @@ class DiabloVMCFlatCfg(DiabloVMCCfg):
             action_rate = -0.01
             action_smooth = -0.01
 
-            collision = -100.0
+            collision = -10.0
             dof_pos_limits = -1
 
             theta_limit = -0.01
