@@ -28,7 +28,7 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 # 1231231
-import os
+import os 
 
 WHEEL_LEGGED_GYM_ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 WHEEL_LEGGED_GYM_ENVS_DIR = os.path.join(
