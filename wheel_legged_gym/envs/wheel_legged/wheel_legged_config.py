@@ -28,7 +28,7 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
-# test
+# test222
 from wheel_legged_gym.envs.base.legged_robot_config import (
     LeggedRobotCfg,
     LeggedRobotCfgPPO,
